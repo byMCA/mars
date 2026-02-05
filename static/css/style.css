@@ -1,0 +1,150 @@
+/* =========================================
+   MARS GOVERNMENT PORTAL - CORE STYLES
+   Theme: Interplanetary Bureaucratic Elegance
+   ========================================= */
+
+:root {
+    --mars-red: #E03C31;
+    --mars-black: #050505;
+    --mars-cyan: #00F0FF;
+    --mars-platinum: #E5E4E2;
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-surface: rgba(20, 20, 25, 0.6);
+}
+
+/* --- BASE SETTINGS --- */
+body {
+    background-color: var(--mars-black);
+    color: var(--mars-platinum);
+    overflow-x: hidden; /* Yatay kaydırmayı engelle */
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Seçim Rengi (Highlight) */
+::selection {
+    background: var(--mars-red);
+    color: #fff;
+}
+
+/* --- 1. SCANLINE OVERLAY (CRT EKRAN EFEKTİ) --- */
+/* Tüm ekranın üzerinde ince çizgiler oluşturur */
+.scanline-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0),
+        rgba(255, 255, 255, 0) 50%,
+        rgba(0, 0, 0, 0.2) 50%,
+        rgba(0, 0, 0, 0.2)
+    );
+    background-size: 100% 4px;
+    z-index: 9999; /* En üstte */
+    pointer-events: none; /* Tıklamayı engelleme */
+    opacity: 0.15;
+}
+
+/* --- 2. GLASSMORPHISM PANELS (CAM PANELLER) --- */
+.glass-panel {
+    background: var(--glass-surface);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+    transition: all 0.3s ease;
+}
+
+.glass-panel:hover {
+    border-color: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+}
+
+/* --- 3. FORM INPUTS (CAM GİRİŞ KUTULARI) --- */
+.glass-input {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.glass-input:focus {
+    outline: none;
+    border-color: var(--mars-cyan);
+    background: rgba(0, 240, 255, 0.05);
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+}
+
+/* Dropdown (Select) Ok İşaretini Özelleştirme */
+select.glass-input {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+}
+
+/* --- 4. CUSTOM SCROLLBAR (FÜTÜRİSTİK KAYDIRMA ÇUBUĞU) --- */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0a0a0a;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--mars-red); /* Hoverda kırmızı olur */
+}
+
+/* --- 5. ANIMATIONS & EFFECTS --- */
+
+/* Yanıp Sönen Canlı Işığı */
+.blink {
+    animation: blinker 1.5s linear infinite;
+}
+
+@keyframes blinker {
+    50% { opacity: 0; }
+}
+
+/* Hologram Metin Efekti */
+.text-glow {
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
+}
+
+/* Hexagon (Altıgen) Avatar Çerçevesi */
+.hexagon {
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+/* Sayfa Yüklenme Animasyonu */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+}
+
+/* --- 6. UTILITY CLASSES --- */
+.border-b-gradient {
+    border-bottom: 1px solid;
+    border-image: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent) 1;
+}
+
+/* Mobilde gizle, Masaüstünde göster */
+@media (max-width: 768px) {
+    .scanline-overlay {
+        background-size: 100% 2px; /* Mobilde çizgiler daha ince */
+    }
+}
