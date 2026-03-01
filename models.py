@@ -20,8 +20,7 @@ class Citizen(UserMixin, db.Model):
     # --- PROFİL BİLGİLERİ ---
     full_name = db.Column(db.String(150))
     origin = db.Column(db.String(50))
-    image_file = db.Column(db.String(100), nullable=False, default='default_citizen.jpg')
-
+    image_url = db.Column(db.String(500), nullable=True)
     # --- BİYOMETRİK VERİLER ---
     height = db.Column(db.String(10)) 
     weight = db.Column(db.String(10))
@@ -117,4 +116,5 @@ class PasswordResetCode(db.Model):
     expires_at = db.Column(db.DateTime, nullable=False)
     used = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 
