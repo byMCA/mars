@@ -18,20 +18,18 @@ from utils import generate_reset_code, send_reset_email
 # ==========================================
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-# Gömülü yapılandırmalar (ENV gerektirmez)
 SECRET_KEY_DEFAULT = 'mars_mission_2030_secure_key_alpha'
-DATABASE_URL = f'sqlite:///{os.path.join(basedir, "mars_core.db")}'
-FORUM_DATABASE_URL = 'sqlite:///forum.db'
+
+db_url = os.environ.get('DATABASE_URL') or f'sqlite:///{os.path.join(basedir, "mars_core.db")}'
+
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = SECRET_KEY_DEFAULT
-app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', SECRET_KEY_DEFAULT)
+app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_BINDS'] = {
-    'forum': FORUM_DATABASE_URL  # İkinci veritabanı
-}
 
-# Eklentileri Başlat
 db.init_app(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -101,6 +99,7 @@ def create_initial_data():
             db.session.commit()
             print(">> SİSTEM: Gezegen durumu başlatıldı.")
 
+        # 2. Admin Kullanıcısı
         if not Citizen.query.filter_by(username='admin').first():
             admin = Citizen(
                 username='admin',
@@ -118,6 +117,90 @@ def create_initial_data():
             db.session.add(admin)
             db.session.commit()
             print(">> SİSTEM: Admin oluşturuldu (User: admin / Pass: mars123)")
+
+        # 3. Üniversite Öğrencilerini Ekleme
+        ogrenciler = [
+            # --- 6 KIZ ÖĞRENCİ ---
+            {
+                "username": "zeyno", "full_name": "Zeynep Demir", "email": "zeynep@itu.edu.tr", 
+                "origin": "İTÜ", "education": "Uzay Mühendisliği", "specialty": "Yörünge Mekaniği", 
+                "height": "168", "weight": "58", "blood_type": "A+", "manifesto": "Mars yörüngesinde ilk yerli uydu ağımızı kurmak için geliyorum."
+            },
+            {
+                "username": "Kedici", "full_name": "Elif Kaya", "email": "elif.kaya@boun.edu.tr", 
+                "origin": "Boğaziçi Uni", "education": "Moleküler Biyoloji ve Genetik", "specialty": "Radyasyon Direnci", 
+                "height": "165", "weight": "55", "blood_type": "0+", "manifesto": "a."
+            },
+            {
+                "username": "iremm", "full_name": "İrem Çelik", "email": "irem@hacettepe.edu.tr", 
+                "origin": "Hacettepe Tıp", "education": "Tıp Fakültesi", "specialty": "Uzay Hekimliği", 
+                "height": "170", "weight": "60", "blood_type": "AB+", "manifesto": "Düşük yerçekiminin insan kemik yapısına etkilerini tersine çevirecek tedavi protokolleri yazacağım."
+            },
+            {
+                "username": "Büşra", "full_name": "Büşra Şahin", "email": "busra@yildiz.edu.tr", 
+                "origin": "Yıldız Teknik", "education": "Endüstri Mühendisliği", "specialty": "Kaynak Optimizasyonu", 
+                "height": "160", "weight": "52", "blood_type": "B-", "manifesto": "Koloninin kısıtlı oksijen ve su kaynaklarını algoritmalarla en verimli şekilde yöneteceğim."
+            },
+            {
+                "username": "ceren_b", "full_name": "Ceren Aydın", "email": "ceren@ege.edu.tr", 
+                "origin": "Ege Uni", "education": "Biyomühendislik", "specialty": "Yapay Atmosfer", 
+                "height": "172", "weight": "63", "blood_type": "A-", "manifesto": "Karbondioksiti solunabilir oksijene çeviren siyanobakteri havuzları inşa etmek istiyorum."
+            },
+            {
+                "username": "ayse", "full_name": "Ayşe Yılmaz", "email": "ayse@metu.edu.tr", 
+                "origin": "ODTÜ", "education": "Bilgisayar Mühendisliği", "specialty": "Yapay Zeka ve Otonomi", 
+                "height": "164", "weight": "56", "blood_type": "0-", "manifesto": "Mars yüzeyindeki otonom maden robotlarının derin öğrenme modellerini eğiteceğim."
+            },
+
+            # --- 4 ERKEK ÖĞRENCİ ---
+            {
+                "username": "caner_ee", "full_name": "Caner Özkan", "email": "caner@bilkent.edu.tr", 
+                "origin": "Bilkent Uni", "education": "Elektrik Elektronik Müh.", "specialty": "Güneş Paneli Sistemleri", 
+                "height": "182", "weight": "78", "blood_type": "A+", "manifesto": "Kum fırtınalarına dayanıklı, kendi kendini temizleyen enerji panelleri tasarladım."
+            },
+            {
+                "username": "mert_law", "full_name": "Mert Korkmaz", "email": "mert@gsu.edu.tr", 
+                "origin": "Galatasaray Uni", "education": "Hukuk Fakültesi", "specialty": "Uzay Hukuku", 
+                "height": "178", "weight": "74", "blood_type": "0+", "manifesto": "Mars'ta kurulacak yeni medeniyetin adalet sistemini ve anayasasını yazmak istiyorum."
+            },
+            {
+                "username": "burak_biz", "full_name": "Burak Yıldız", "email": "burak@marmara.edu.tr", 
+                "origin": "Marmara Uni", "education": "İşletme", "specialty": "Koloni Ekonomisi", 
+                "height": "180", "weight": "80", "blood_type": "B+", "manifesto": "Dünya ile Mars arasındaki ilk gezegenler arası ticaret ve kredi sistemini kuracağım."
+            },
+            {
+                "username": "emre", "full_name": "Emre Can", "email": "emre@deu.edu.tr", 
+                "origin": "Dokuz Eylül", "education": "Makine Mühendisliği", "specialty": "Basınçlı Habitatlar", 
+                "height": "185", "weight": "85", "blood_type": "AB-", "manifesto": "Yeraltı lav tüplerinde kurulacak ilk kalıcı ve yalıtımlı yaşam kapsüllerini inşa edeceğim."
+            }
+        ]
+
+        eklenen_sayisi = 0
+        for veri in ogrenciler:
+            if not Citizen.query.filter_by(username=veri["username"]).first():
+                yeni_kisi = Citizen(
+                    username=veri["username"],
+                    full_name=veri["full_name"],
+                    email=veri["email"],
+                    password_hash=generate_password_hash("mars123", method='pbkdf2:sha256'),
+                    origin=veri["origin"],
+                    citizenship_id=generate_mars_id(veri["origin"]),
+                    tier=1, 
+                    status='APPROVED',
+                    education=veri["education"],
+                    specialty=veri["specialty"],
+                    height=veri["height"],
+                    weight=veri["weight"],
+                    blood_type=veri["blood_type"],
+                    manifesto=veri["manifesto"],
+                    image_file="default_citizen.jpg"
+                )
+                db.session.add(yeni_kisi)
+                eklenen_sayisi += 1
+        
+        if eklenen_sayisi > 0:
+            db.session.commit()
+            print(f">> SİSTEM: {eklenen_sayisi} yeni üniversite öğrencisi veritabanına eklendi!")
 
 create_initial_data()
 
