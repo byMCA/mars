@@ -17,7 +17,7 @@ with app.app_context():
         origin='EU', height=175, weight=70, blood_type='0+',
         education='Mühendis', specialty='Botanik',
         manifesto='Patates yetiştirmek istiyorum.',
-        tier=1, status='PENDING', image_file='default_citizen.jpg'
+        tier=1, status='PENDING', image_url=None
     )
 
     # 3. BEKLEYEN BAŞVURU (User 2)
@@ -29,7 +29,7 @@ with app.app_context():
         origin='AS', height=165, weight=55, blood_type='B+',
         education='Doktor', specialty='Cerrahi',
         manifesto='İnsan hayatını korumaya geliyorum.',
-        tier=2, status='PENDING', image_file='default_citizen.jpg'
+        tier=2, status='PENDING', image_url=None
     )
 
     # 4. KOLONİ DURUMU (NÜFUS BURADA)

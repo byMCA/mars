@@ -44,10 +44,10 @@
                         
                         <div class="relative group/photo">
                             <div class="w-24 h-32 bg-gray-300 rounded border-2 border-white shadow-sm overflow-hidden relative">
-                                <img src="{{ url_for('static', filename='profile_pics/' + user.image_file) }}" class="w-full h-full object-cover grayscale contrast-125">
+                                <img src="{{ user.image_url or url_for('static', filename='profile_pics/default_citizen.jpg') }}" class="w-full h-full object-cover grayscale contrast-125">
                                 <div class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent opacity-30 pointer-events-none"></div>
 
-                                {% if user.image_file == 'default_citizen.jpg' %}
+                                {% if not user.image_url %}
                                     <form action="{{ url_for('upload_id_photo') }}" method="POST" enctype="multipart/form-data" class="absolute inset-0 z-20">
                                         <label class="w-full h-full flex flex-col items-center justify-center bg-black/60 cursor-pointer hover:bg-mars-red/80 transition-colors backdrop-blur-[2px]">
                                             <svg class="w-6 h-6 text-white mb-1 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -71,7 +71,7 @@
                                 {% endif %}
                             </div>
                             <div class="absolute -right-4 top-10 w-8 h-10 overflow-hidden opacity-30 mix-blend-multiply pointer-events-none">
-                                <img src="{{ url_for('static', filename='profile_pics/' + user.image_file) }}" class="w-full h-full object-cover grayscale">
+                                <img src="{{ user.image_url or url_for('static', filename='profile_pics/default_citizen.jpg') }}" class="w-full h-full object-cover grayscale">
                             </div>
                         </div>
 

@@ -23,8 +23,16 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 # Gömülü yapılandırmalar (ENV gerektirmez)
 SECRET_KEY_DEFAULT = 'mars_mission_2030_secure_key_alpha'
-DATABASE_URL = f'sqlite:///{os.path.join(basedir, "mars_core.db")}'
-FORUM_DATABASE_URL = 'sqlite:///forum.db'
+
+# PostgreSQL varsayılanları (ENV ile override edilebilir)
+DATABASE_URL = os.environ.get(
+    'DATABASE_URL',
+    'postgresql+psycopg2://postgres:postgres@localhost:5432/mars_core'
+)
+FORUM_DATABASE_URL = os.environ.get(
+    'FORUM_DATABASE_URL',
+    'postgresql+psycopg2://postgres:postgres@localhost:5432/forum'
+)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = SECRET_KEY_DEFAULT

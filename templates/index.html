@@ -127,7 +127,7 @@
 
                     {% if weekly_citizen %}
                         <div class="w-20 h-20 rounded-full border-2 border-yellow-500 p-1 flex-shrink-0 relative shadow-[0_0_15px_rgba(234,179,8,0.5)]">
-                            <img src="{{ url_for('static', filename='profile_pics/' + weekly_citizen.image_file) }}" class="w-full h-full object-cover rounded-full grayscale group-hover:grayscale-0 transition-all duration-500">
+                            <img src="{{ weekly_citizen.image_url or url_for('static', filename='profile_pics/default_citizen.jpg') }}" class="w-full h-full object-cover rounded-full grayscale group-hover:grayscale-0 transition-all duration-500">
                             <div class="absolute -bottom-1 -right-1 bg-yellow-500 text-black text-[10px] font-bold w-6 h-6 flex items-center justify-center rounded-full border-2 border-black">#1</div>
                         </div>
 

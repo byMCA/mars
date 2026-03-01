@@ -41,7 +41,7 @@ class CitizenAdmin(SecureModelView):
     
     # Düzenleme formunda görünecek alanlar (Password hash'i gizledik)
     form_columns = ('username', 'full_name', 'origin', 'tier', 'status', 'citizenship_id', 
-                    'education', 'specialty', 'height', 'weight', 'blood_type', 'contribution_score', 'image_file')
+                    'education', 'specialty', 'height', 'weight', 'blood_type', 'contribution_score', 'image_url')
 
     # Status alanını Dropdown (seçenekli) yapalım
     form_choices = {

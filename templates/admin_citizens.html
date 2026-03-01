@@ -42,9 +42,7 @@
                         
                         <td class="p-4">
                             <div class="flex items-center gap-3">
-                                <img src="{{ user.image_url }}" alt="Vatandaş Fotoğrafı" class="profile-photo">
-{% else %}
-    <img src="{{ url_for('static', filename='default_citizen.jpg') }}" alt="Bilinmeyen Vatandaş" class="profile-photo">
+                                <img src="{{ user.image_url or url_for('static', filename='profile_pics/default_citizen.jpg') }}" class="w-10 h-10 rounded object-cover border border-gray-600">
                                 <div>
                                     <div class="font-bold text-white">{{ user.username }}</div>
                                     <div class="text-[10px] text-gray-500">{{ user.full_name }}</div>
@@ -140,5 +138,4 @@
         document.getElementById('messageModal').classList.remove('hidden');
     }
 </script>
-
 {% endblock %}
