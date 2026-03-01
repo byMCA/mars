@@ -58,11 +58,16 @@
                                         </label>
                                     </form>
                                 {% else %}
-                                    <div class="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover/photo:opacity-100 transition-opacity z-20 cursor-not-allowed">
-                                        <svg class="w-8 h-8 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                        </svg>
-                                    </div>
+                                    <form action="{{ url_for('upload_id_photo') }}" method="POST" enctype="multipart/form-data" class="absolute inset-0 z-20 opacity-0 group-hover/photo:opacity-100 transition-opacity">
+                                        <label class="w-full h-full flex flex-col items-center justify-center bg-black/70 cursor-pointer hover:bg-mars-cyan/60 transition-colors backdrop-blur-[2px]">
+                                            <svg class="w-8 h-8 text-white mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                            </svg>
+                                            <span class="text-[9px] text-white font-bold text-center uppercase tracking-[0.3em]">CHANGE PHOTO</span>
+                                            <span class="text-[7px] text-gray-200 mt-2 tracking-[0.2em]">(OVERRIDES CURRENT)</span>
+                                            <input type="file" name="photo" class="hidden" onchange="this.form.submit()" accept="image/*">
+                                        </label>
+                                    </form>
                                 {% endif %}
                             </div>
                             <div class="absolute -right-4 top-10 w-8 h-10 overflow-hidden opacity-30 mix-blend-multiply pointer-events-none">

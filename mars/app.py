@@ -687,5 +687,10 @@ def forum():
     # Şimdilik sadece boş bir şablon döndürüyoruz
     return render_template('forum.html')
 
+
+@app.route('/mars-social')
+def mars_social():
+    return render_template('mars.html')
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
