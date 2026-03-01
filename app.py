@@ -28,10 +28,8 @@ if raw_db_url:
     else:
         DATABASE_URL = raw_db_url
 else:
-    # 2. Öncelik: Eğer ortam değişkeni yoksa, senin Supabase adresin (Şifreni buraya yazmalısın)
-    # Not: Buraya da +psycopg2 ekledik ki kütüphane çakışması olmasın
-    DATABASE_URL = 'postgresql+psycopg2://postgres:Nurgeldi.2016@db.kbvfacxkhpwycvubwgni.supabase.co:5432/postgres'
-
+   
+    DATABASE_URL = "postgresql://postgres.kbvfacxkhpwycvubwgni:Nurgeldi.2016@aws-1-ap-south-1.pooler.supabase.com:6543/postgres"
 # Forum için özel bir URL varsa onu al, yoksa ana DATABASE_URL'i kullan
 FORUM_DATABASE_URL = os.environ.get('FORUM_DATABASE_URL', DATABASE_URL)
 
@@ -802,4 +800,5 @@ if __name__ == '__main__':
 
 
     app.run(debug=True, port=5000)
+
 
