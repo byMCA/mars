@@ -2,11 +2,14 @@ import os
 import random
 import string
 from datetime import datetime
-
 import requests
 
-# Brevo API ayarları (ENV varsa onu kullanır, yoksa gömülü varsayılan)
-BREVO_API_KEY = = os.getenv("BREVO_API_KEY")
+# Brevo API ayarları (Sadece environment variable kullan)
+BREVO_API_KEY = os.getenv("BREVO_API_KEY")
+
+if not BREVO_API_KEY:
+    raise ValueError("BREVO_API_KEY environment variable is not set")
+
 MAIL_FROM = os.getenv("MAIL_FROM", "marsplatformsocial@gmail.com")
 MAIL_FROM_NAME = os.getenv("MAIL_FROM_NAME", "Mars Platform 🚀")
 
@@ -169,4 +172,5 @@ if __name__ == "__main__":
         else:
 
             print("Mail gönderilemedi, konsol loglarını kontrol edin.")
+
 
