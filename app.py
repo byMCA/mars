@@ -24,14 +24,14 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 # Gömülü yapılandırmalar (ENV gerektirmez)
 SECRET_KEY_DEFAULT = 'mars_mission_2030_secure_key_alpha'
 
-# PostgreSQL varsayılanları (ENV ile override edilebilir)
-DATABASE_URL = os.environ.get(
-    'DATABASE_URL',
-    'postgresql+psycopg2://postgres:postgres@localhost:5432/mars_core'
-)
-FORUM_DATABASE_URL = os.environ.get(
-    'FORUM_DATABASE_URL',
-    'postgresql+psycopg2://postgres:postgres@localhost:5432/forum'
+raw_db_url = os.environ.get('DATABASE_URL')
+
+if raw_db_url and raw_db_url.startswith("postgres://"):
+    # Render'ın verdiği adresi düzeltiyoruz
+    DATABASE_URL = raw_db_url.replace("postgres://", "postgresql+psycopg2://", 1)
+else:
+    # Eğer Render'da değilsek (kendi bilgisayarımızdaysak) eski haline dönsün
+    DATABASE_URL = 'postgresql://mars_db_7nm8_user:SdKaom2P44pocjwD1mJaj1Ux6n5q41kr@dpg-d6hvcpcr85hc739o1so0-a/mars_db_7nm8'
 )
 
 app = Flask(__name__)
@@ -798,5 +798,6 @@ def mars_social():
     return render_template('mars.html')
 
 if __name__ == '__main__':
+
 
     app.run(debug=True, port=5000)
