@@ -12,24 +12,37 @@ from flask import Flask, render_template, request, redirect, url_for, flash, abo
 from sqlalchemy import or_
 from models import db, Citizen, PlanetaryStatus, Decree, Report, Notification, PasswordResetCode
 from utils import generate_reset_code, send_reset_email
+import cloudinary
+import cloudinary.uploader
+
 
 # ==========================================
 # 1. UYGULAMA VE VERİTABANI AYARLARI
 # ==========================================
 basedir = os.path.abspath(os.path.dirname(__file__))
 
+# Gömülü yapılandırmalar (ENV gerektirmez)
 SECRET_KEY_DEFAULT = 'mars_mission_2030_secure_key_alpha'
-
-db_url = os.environ.get('DATABASE_URL') or f'sqlite:///{os.path.join(basedir, "mars_core.db")}'
-
-if db_url.startswith("postgres://"):
-    db_url = db_url.replace("postgres://", "postgresql://", 1)
+DATABASE_URL = f'sqlite:///{os.path.join(basedir, "mars_core.db")}'
+FORUM_DATABASE_URL = 'sqlite:///forum.db'
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', SECRET_KEY_DEFAULT)
-app.config['SQLALCHEMY_DATABASE_URI'] = db_url
+app.config['SECRET_KEY'] = SECRET_KEY_DEFAULT
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_BINDS'] = {
+    'forum': FORUM_DATABASE_URL  # İkinci veritabanı
+    
+}
 
+# --- CLOUDINARY AYARLARI ---
+cloudinary.config( 
+  cloud_name = os.environ.get("CLOUDINARY_CLOUD_NAME"), 
+  api_key = os.environ.get("CLOUDINARY_API_KEY"), 
+  api_secret = os.environ.get("CLOUDINARY_API_SECRET"),
+  secure = True
+)
+# Eklentileri Başlat
 db.init_app(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -99,7 +112,6 @@ def create_initial_data():
             db.session.commit()
             print(">> SİSTEM: Gezegen durumu başlatıldı.")
 
-        # 2. Admin Kullanıcısı
         if not Citizen.query.filter_by(username='admin').first():
             admin = Citizen(
                 username='admin',
@@ -117,90 +129,6 @@ def create_initial_data():
             db.session.add(admin)
             db.session.commit()
             print(">> SİSTEM: Admin oluşturuldu (User: admin / Pass: mars123)")
-
-        # 3. Üniversite Öğrencilerini Ekleme
-        ogrenciler = [
-            # --- 6 KIZ ÖĞRENCİ ---
-            {
-                "username": "zeyno", "full_name": "Zeynep Demir", "email": "zeynep@itu.edu.tr", 
-                "origin": "İTÜ", "education": "Uzay Mühendisliği", "specialty": "Yörünge Mekaniği", 
-                "height": "168", "weight": "58", "blood_type": "A+", "manifesto": "Mars yörüngesinde ilk yerli uydu ağımızı kurmak için geliyorum."
-            },
-            {
-                "username": "Kedici", "full_name": "Elif Kaya", "email": "elif.kaya@boun.edu.tr", 
-                "origin": "Boğaziçi Uni", "education": "Moleküler Biyoloji ve Genetik", "specialty": "Radyasyon Direnci", 
-                "height": "165", "weight": "55", "blood_type": "0+", "manifesto": "a."
-            },
-            {
-                "username": "iremm", "full_name": "İrem Çelik", "email": "irem@hacettepe.edu.tr", 
-                "origin": "Hacettepe Tıp", "education": "Tıp Fakültesi", "specialty": "Uzay Hekimliği", 
-                "height": "170", "weight": "60", "blood_type": "AB+", "manifesto": "Düşük yerçekiminin insan kemik yapısına etkilerini tersine çevirecek tedavi protokolleri yazacağım."
-            },
-            {
-                "username": "Büşra", "full_name": "Büşra Şahin", "email": "busra@yildiz.edu.tr", 
-                "origin": "Yıldız Teknik", "education": "Endüstri Mühendisliği", "specialty": "Kaynak Optimizasyonu", 
-                "height": "160", "weight": "52", "blood_type": "B-", "manifesto": "Koloninin kısıtlı oksijen ve su kaynaklarını algoritmalarla en verimli şekilde yöneteceğim."
-            },
-            {
-                "username": "ceren_b", "full_name": "Ceren Aydın", "email": "ceren@ege.edu.tr", 
-                "origin": "Ege Uni", "education": "Biyomühendislik", "specialty": "Yapay Atmosfer", 
-                "height": "172", "weight": "63", "blood_type": "A-", "manifesto": "Karbondioksiti solunabilir oksijene çeviren siyanobakteri havuzları inşa etmek istiyorum."
-            },
-            {
-                "username": "ayse", "full_name": "Ayşe Yılmaz", "email": "ayse@metu.edu.tr", 
-                "origin": "ODTÜ", "education": "Bilgisayar Mühendisliği", "specialty": "Yapay Zeka ve Otonomi", 
-                "height": "164", "weight": "56", "blood_type": "0-", "manifesto": "Mars yüzeyindeki otonom maden robotlarının derin öğrenme modellerini eğiteceğim."
-            },
-
-            # --- 4 ERKEK ÖĞRENCİ ---
-            {
-                "username": "caner_ee", "full_name": "Caner Özkan", "email": "caner@bilkent.edu.tr", 
-                "origin": "Bilkent Uni", "education": "Elektrik Elektronik Müh.", "specialty": "Güneş Paneli Sistemleri", 
-                "height": "182", "weight": "78", "blood_type": "A+", "manifesto": "Kum fırtınalarına dayanıklı, kendi kendini temizleyen enerji panelleri tasarladım."
-            },
-            {
-                "username": "mert_law", "full_name": "Mert Korkmaz", "email": "mert@gsu.edu.tr", 
-                "origin": "Galatasaray Uni", "education": "Hukuk Fakültesi", "specialty": "Uzay Hukuku", 
-                "height": "178", "weight": "74", "blood_type": "0+", "manifesto": "Mars'ta kurulacak yeni medeniyetin adalet sistemini ve anayasasını yazmak istiyorum."
-            },
-            {
-                "username": "burak_biz", "full_name": "Burak Yıldız", "email": "burak@marmara.edu.tr", 
-                "origin": "Marmara Uni", "education": "İşletme", "specialty": "Koloni Ekonomisi", 
-                "height": "180", "weight": "80", "blood_type": "B+", "manifesto": "Dünya ile Mars arasındaki ilk gezegenler arası ticaret ve kredi sistemini kuracağım."
-            },
-            {
-                "username": "emre", "full_name": "Emre Can", "email": "emre@deu.edu.tr", 
-                "origin": "Dokuz Eylül", "education": "Makine Mühendisliği", "specialty": "Basınçlı Habitatlar", 
-                "height": "185", "weight": "85", "blood_type": "AB-", "manifesto": "Yeraltı lav tüplerinde kurulacak ilk kalıcı ve yalıtımlı yaşam kapsüllerini inşa edeceğim."
-            }
-        ]
-
-        eklenen_sayisi = 0
-        for veri in ogrenciler:
-            if not Citizen.query.filter_by(username=veri["username"]).first():
-                yeni_kisi = Citizen(
-                    username=veri["username"],
-                    full_name=veri["full_name"],
-                    email=veri["email"],
-                    password_hash=generate_password_hash("mars123", method='pbkdf2:sha256'),
-                    origin=veri["origin"],
-                    citizenship_id=generate_mars_id(veri["origin"]),
-                    tier=1, 
-                    status='APPROVED',
-                    education=veri["education"],
-                    specialty=veri["specialty"],
-                    height=veri["height"],
-                    weight=veri["weight"],
-                    blood_type=veri["blood_type"],
-                    manifesto=veri["manifesto"],
-                    image_file="default_citizen.jpg"
-                )
-                db.session.add(yeni_kisi)
-                eklenen_sayisi += 1
-        
-        if eklenen_sayisi > 0:
-            db.session.commit()
-            print(f">> SİSTEM: {eklenen_sayisi} yeni üniversite öğrencisi veritabanına eklendi!")
 
 create_initial_data()
 
@@ -287,23 +215,15 @@ def apply():
             flash('HATA: Bu E-Mail adresi zaten kullanımda.', 'error')
             return redirect(url_for('apply'))
 
-        # 2. Fotoğraf İşleme
-        image_filename = 'default_citizen.jpg'
+# 2. Fotoğraf İşleme (Cloudinary'ye Yükleme)
+        image_url = None # Varsayılan olarak boş veya varsayılan bir link koyabilirsin
         if image_data and "base64," in image_data:
             try:
-                base64_data = image_data.split(",")[1]
-                timestamp = str(int(time.time()))
-                image_filename = f"{username}_{timestamp}.jpg"
-                
-                upload_folder = os.path.join(app.root_path, 'static/profile_pics')
-                if not os.path.exists(upload_folder):
-                    os.makedirs(upload_folder)
-                    
-                file_path = os.path.join(upload_folder, image_filename)
-                with open(file_path, "wb") as fh:
-                    fh.write(base64.b64decode(base64_data))
+                # Cloudinary "data:image/png;base64,..." formatındaki veriyi direkt anlar ve yükler
+                upload_result = cloudinary.uploader.upload(image_data)
+                image_url = upload_result.get('secure_url')
             except Exception as e:
-                print(f"Fotoğraf Hatası: {e}")
+                print(f"Cloudinary Yükleme Hatası: {e}")
 
         # 3. Veritabanına Kayıt
         new_citizen = Citizen(
@@ -312,16 +232,13 @@ def apply():
             full_name=full_name,
             password_hash=generate_password_hash(password, method='pbkdf2:sha256'),
             origin=origin,
-            
-            # Artık rastgele değil, kullanıcının girdiği veriler:
             height=height,
             weight=weight,
             blood_type=blood_type,
-            
             education=education,
             specialty=specialty,
             manifesto=manifesto,
-            image_file=image_filename,
+            image_url=image_url,
             tier=0,            
             status='PENDING'   
         )
@@ -743,8 +660,8 @@ def check_username():
         return jsonify({'available': False, 'message': 'KOD ADI KULLANIMDA (MEVCUT)'})
     else:
         return jsonify({'available': True, 'message': 'KOD ADI MÜSAİT'})
-    
-    # --- KİMLİK FOTOĞRAFI YÜKLEME (TEK SEFERLİK) ---
+
+
 @app.route('/upload_id_photo', methods=['POST'])
 @login_required
 def upload_id_photo():
@@ -760,36 +677,20 @@ def upload_id_photo():
 
     if file:
         try:
-            file_ext = os.path.splitext(file.filename)[1]
-            timestamp = str(int(time.time()))
-            new_filename = f"{current_user.username}_ID_{timestamp}{file_ext}"
+            # Doğrudan buluta yüklüyoruz
+            upload_result = cloudinary.uploader.upload(file)
+            image_url = upload_result.get('secure_url')
 
-            upload_folder = os.path.join(app.root_path, 'static/profile_pics')
-            if not os.path.exists(upload_folder):
-                os.makedirs(upload_folder)
-
-            file_path = os.path.join(upload_folder, new_filename)
-            file.save(file_path)
-
-            old_filename = current_user.image_file
-            current_user.image_file = new_filename
+            # Veritabanında kullanıcının fotoğraf linkini güncelliyoruz
+            current_user.image_url = image_url
             db.session.commit()
 
-            if old_filename and old_filename != 'default_citizen.jpg':
-                old_path = os.path.join(upload_folder, old_filename)
-                if os.path.exists(old_path):
-                    try:
-                        os.remove(old_path)
-                    except OSError as exc:
-                        print(f"Önceki profil fotoğrafı silinemedi: {exc}")
-
-            flash('Kimlik fotoğrafı güncellendi.', 'success')
+            flash('Kimlik fotoğrafı başarıyla buluta güncellendi.', 'success')
         except Exception as e:
-            print(f"Hata: {e}")
+            print(f"Bulut Yükleme Hatası: {e}")
             flash('Yükleme sırasında teknik bir hata oluştu.', 'error')
 
     return redirect(url_for('dashboard'))
-# --- BUTON İŞLEVLERİ (İNDİRME VE RAPORLAMA) ---
 
 @app.route('/download_id_data')
 @login_required
@@ -889,4 +790,5 @@ def mars_social():
     return render_template('mars.html')
 
 if __name__ == '__main__':
+
     app.run(debug=True, port=5000)
