@@ -10,7 +10,6 @@ import base64
 import time
 from flask import Flask, render_template, request, redirect, url_for, flash, abort, jsonify 
 from sqlalchemy import or_
-from dotenv import load_dotenv
 from models import db, Citizen, PlanetaryStatus, Decree, Report, Notification, PasswordResetCode
 from utils import generate_reset_code, send_reset_email
 
@@ -18,16 +17,18 @@ from utils import generate_reset_code, send_reset_email
 # 1. UYGULAMA VE VERİTABANI AYARLARI
 # ==========================================
 basedir = os.path.abspath(os.path.dirname(__file__))
-load_dotenv(os.path.join(basedir, '.env'))
+
+# Gömülü yapılandırmalar (ENV gerektirmez)
+SECRET_KEY_DEFAULT = 'mars_mission_2030_secure_key_alpha'
+DATABASE_URL = f'sqlite:///{os.path.join(basedir, "mars_core.db")}'
+FORUM_DATABASE_URL = 'sqlite:///forum.db'
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'mars_mission_2030_secure_key_alpha')
-
-default_db_path = os.path.join(basedir, 'mars_core.db')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', f'sqlite:///{default_db_path}')
+app.config['SECRET_KEY'] = SECRET_KEY_DEFAULT
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_BINDS'] = {
-    'forum': os.getenv('FORUM_DATABASE_URL', 'sqlite:///forum.db')  # İkinci veritabanı
+    'forum': FORUM_DATABASE_URL  # İkinci veritabanı
 }
 
 # Eklentileri Başlat
@@ -407,8 +408,18 @@ def forgot_password():
             flash('Sistem hatası nedeniyle kod oluşturulamadı.', 'error')
             return redirect(url_for('forgot_password'))
 
-        send_reset_email(user.email, code)
-        flash('Doğrulama kodu kayıtlı e-posta adresinize gönderildi.', 'success')
+        base_link = os.getenv('RESET_PORTAL_URL')
+        if base_link:
+            separator = '&' if '?' in base_link else '?'
+            reset_link = f"{base_link}{separator}email={user.email}"
+        else:
+            reset_link = url_for('reset_password', email=user.email, _external=True)
+
+        mail_sent = send_reset_email(user.email, code, portal_link=reset_link)
+        if mail_sent:
+            flash('Doğrulama kodu kayıtlı e-posta adresinize gönderildi.', 'success')
+        else:
+            flash('E-posta gönderilemedi. Brevo API anahtarı/gönderen adresi ayarlarını kontrol edin.', 'warning')
         return redirect(url_for('reset_password', email=user.email))
 
     return render_template('forgot_password.html')
