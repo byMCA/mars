@@ -32,7 +32,8 @@ if raw_db_url and raw_db_url.startswith("postgres://"):
 else:
     # Eğer Render'da değilsek (kendi bilgisayarımızdaysak) eski haline dönsün
     DATABASE_URL = 'postgresql://mars_db_7nm8_user:SdKaom2P44pocjwD1mJaj1Ux6n5q41kr@dpg-d6hvcpcr85hc739o1so0-a/mars_db_7nm8'
-)
+
+FORUM_DATABASE_URL = os.environ.get('FORUM_DATABASE_URL', DATABASE_URL)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = SECRET_KEY_DEFAULT
