@@ -16,23 +16,23 @@ import cloudinary
 import cloudinary.uploader
 
 
-# ==========================================
-# 1. UYGULAMA VE VERİTABANI AYARLARI
-# ==========================================
-basedir = os.path.abspath(os.path.dirname(__file__))
-
-# Gömülü yapılandırmalar (ENV gerektirmez)
 SECRET_KEY_DEFAULT = 'mars_mission_2030_secure_key_alpha'
 
+# 1. Öncelik: Sistemdeki DATABASE_URL (Render'ın otomatik verdiği)
 raw_db_url = os.environ.get('DATABASE_URL')
 
-if raw_db_url and raw_db_url.startswith("postgres://"):
-    # Render'ın verdiği adresi düzeltiyoruz
-    DATABASE_URL = raw_db_url.replace("postgres://", "postgresql+psycopg2://", 1)
+if raw_db_url:
+    # Render "postgres://" verir, SQLAlchemy "postgresql+psycopg2://" bekler
+    if raw_db_url.startswith("postgres://"):
+        DATABASE_URL = raw_db_url.replace("postgres://", "postgresql+psycopg2://", 1)
+    else:
+        DATABASE_URL = raw_db_url
 else:
-    # Eğer Render'da değilsek (kendi bilgisayarımızdaysak) eski haline dönsün
-    DATABASE_URL = 'postgresql://mars_db_7nm8_user:SdKaom2P44pocjwD1mJaj1Ux6n5q41kr@dpg-d6hvcpcr85hc739o1so0-a/mars_db_7nm8'
+    # 2. Öncelik: Eğer ortam değişkeni yoksa, senin Supabase adresin (Şifreni buraya yazmalısın)
+    # Not: Buraya da +psycopg2 ekledik ki kütüphane çakışması olmasın
+    DATABASE_URL = 'postgresql+psycopg2://postgres:Nurgeldi.2016@db.kbvfacxkhpwycvubwgni.supabase.co:5432/postgres'
 
+# Forum için özel bir URL varsa onu al, yoksa ana DATABASE_URL'i kullan
 FORUM_DATABASE_URL = os.environ.get('FORUM_DATABASE_URL', DATABASE_URL)
 
 app = Flask(__name__)
@@ -802,3 +802,4 @@ if __name__ == '__main__':
 
 
     app.run(debug=True, port=5000)
+
