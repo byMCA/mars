@@ -6,7 +6,7 @@ from datetime import datetime
 import requests
 
 # Brevo API ayarları (ENV varsa onu kullanır, yoksa gömülü varsayılan)
-BREVO_API_KEY = os.getenv("BREVO_API_KEY", "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")
+BREVO_API_KEY = = os.getenv("BREVO_API_KEY")
 MAIL_FROM = os.getenv("MAIL_FROM", "marsplatformsocial@gmail.com")
 MAIL_FROM_NAME = os.getenv("MAIL_FROM_NAME", "Mars Platform 🚀")
 
@@ -169,3 +169,4 @@ if __name__ == "__main__":
         else:
 
             print("Mail gönderilemedi, konsol loglarını kontrol edin.")
+
