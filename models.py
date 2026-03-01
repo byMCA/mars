@@ -41,6 +41,7 @@ class Citizen(UserMixin, db.Model):
 
     # --- İLİŞKİLER ---
     decrees = db.relationship('Decree', backref='author', lazy=True)
+    reset_requests = db.relationship('PasswordResetCode', backref='user', lazy=True, cascade='all, delete-orphan')
     # Report ilişkisini burada backref ile otomatik kuruyoruz (aşağıda tanımlı)
 
     def __repr__(self):
@@ -104,4 +105,16 @@ class Notification(db.Model):
     category = db.Column(db.String(20), default='info') # info, warning, success, alert
     is_read = db.Column(db.Boolean, default=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class PasswordResetCode(db.Model):
+    __tablename__ = 'password_reset_codes'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('citizen.id'), nullable=False)
+    email = db.Column(db.String(150), nullable=False)
+    code = db.Column(db.String(6), nullable=False)
+    expires_at = db.Column(db.DateTime, nullable=False)
+    used = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 

@@ -5,25 +5,29 @@ from flask import Flask, render_template, request, redirect, url_for, flash, abo
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, timedelta
 import base64
 import time
 from flask import Flask, render_template, request, redirect, url_for, flash, abort, jsonify 
 from sqlalchemy import or_
-from models import db, Citizen, PlanetaryStatus, Decree, Report, Notification
+from dotenv import load_dotenv
+from models import db, Citizen, PlanetaryStatus, Decree, Report, Notification, PasswordResetCode
+from utils import generate_reset_code, send_reset_email
 
 # ==========================================
 # 1. UYGULAMA VE VERİTABANI AYARLARI
 # ==========================================
-app = Flask(__name__)
-app.config['SECRET_KEY'] = 'mars_mission_2030_secure_key_alpha' 
-
-# Veritabanı Yolu Ayarı
 basedir = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'mars_core.db')
+load_dotenv(os.path.join(basedir, '.env'))
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'mars_mission_2030_secure_key_alpha')
+
+default_db_path = os.path.join(basedir, 'mars_core.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', f'sqlite:///{default_db_path}')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_BINDS'] = {
-    'forum': 'sqlite:///forum.db'  # İkinci veritabanı
+    'forum': os.getenv('FORUM_DATABASE_URL', 'sqlite:///forum.db')  # İkinci veritabanı
 }
 
 # Eklentileri Başlat
@@ -369,6 +373,103 @@ def login():
     return render_template('login.html')
 
 
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+        if not email:
+            flash('E-posta adresi zorunludur.', 'error')
+            return redirect(url_for('forgot_password'))
+
+        user = Citizen.query.filter(Citizen.email.ilike(email)).first()
+        if not user:
+            flash('Bu e-posta adresi ile eşleşen bir hesap bulunamadı.', 'error')
+            return redirect(url_for('forgot_password'))
+
+        code = generate_reset_code()
+        expires_at = datetime.utcnow() + timedelta(minutes=10)
+
+        PasswordResetCode.query.filter_by(user_id=user.id, used=False).delete(synchronize_session=False)
+
+        reset_entry = PasswordResetCode(
+            user_id=user.id,
+            email=user.email,
+            code=code,
+            expires_at=expires_at
+        )
+
+        try:
+            db.session.add(reset_entry)
+            db.session.commit()
+        except Exception as exc:
+            db.session.rollback()
+            print(f'Password reset creation error: {exc}')
+            flash('Sistem hatası nedeniyle kod oluşturulamadı.', 'error')
+            return redirect(url_for('forgot_password'))
+
+        send_reset_email(user.email, code)
+        flash('Doğrulama kodu kayıtlı e-posta adresinize gönderildi.', 'success')
+        return redirect(url_for('reset_password', email=user.email))
+
+    return render_template('forgot_password.html')
+
+
+@app.route('/reset-password', methods=['GET', 'POST'])
+def reset_password():
+    email = request.args.get('email') if request.method == 'GET' else request.form.get('email')
+
+    if not email:
+        flash('Bağlantı geçersiz. Lütfen şifre sıfırlama isteğini yeniden oluşturun.', 'error')
+        return redirect(url_for('forgot_password'))
+
+    user = Citizen.query.filter(Citizen.email.ilike(email)).first()
+    if not user:
+        flash('Bu e-posta adresiyle eşleşen bir hesap bulunamadı.', 'error')
+        return redirect(url_for('forgot_password'))
+
+    if request.method == 'POST':
+        code = request.form.get('code', '').strip()
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+
+        if not code:
+            flash('Doğrulama kodu zorunludur.', 'error')
+            return redirect(url_for('reset_password', email=user.email))
+
+        if new_password != confirm_password:
+            flash('Girilen şifreler eşleşmiyor.', 'error')
+            return redirect(url_for('reset_password', email=user.email))
+
+        reset_entry = PasswordResetCode.query.filter_by(
+            user_id=user.id,
+            code=code,
+            used=False
+        ).order_by(PasswordResetCode.created_at.desc()).first()
+
+        if not reset_entry:
+            flash('Doğrulama kodu geçersiz.', 'error')
+            return redirect(url_for('reset_password', email=user.email))
+
+        if reset_entry.expires_at < datetime.utcnow():
+            flash('Doğrulama kodu süresi dolmuş. Lütfen yeni bir talep oluşturun.', 'warning')
+            return redirect(url_for('forgot_password'))
+
+        user.password_hash = generate_password_hash(new_password, method='pbkdf2:sha256')
+        reset_entry.used = True
+
+        try:
+            db.session.commit()
+            flash('Şifreniz başarıyla güncellendi.', 'success')
+            return redirect(url_for('login'))
+        except Exception as exc:
+            db.session.rollback()
+            print(f'Password update error: {exc}')
+            flash('Şifre güncellenemedi. Lütfen tekrar deneyin.', 'error')
+            return redirect(url_for('reset_password', email=user.email))
+
+    return render_template('reset_password.html', email=user.email)
+
+
 @app.route('/logout')
 @login_required
 def logout():
@@ -553,11 +654,6 @@ def check_username():
 @app.route('/upload_id_photo', methods=['POST'])
 @login_required
 def upload_id_photo():
-    # Güvenlik Kontrolü: Fotoğraf daha önce değiştirilmişse işlemi durdur
-    if current_user.image_file != 'default_citizen.jpg':
-        flash('ERİŞİM REDDEDİLDİ: Kimlik fotoğrafı onaylanmış ve kilitlenmiştir. Değiştirilemez.', 'error')
-        return redirect(url_for('dashboard'))
-
     if 'photo' not in request.files:
         flash('Dosya bulunamadı.', 'error')
         return redirect(url_for('dashboard'))
@@ -570,24 +666,30 @@ def upload_id_photo():
 
     if file:
         try:
-            # Dosya ismini güvenli hale getir ve benzersiz yap
-            file_ext = os.path.splitext(file.filename)[1] # .jpg, .png vs.
+            file_ext = os.path.splitext(file.filename)[1]
             timestamp = str(int(time.time()))
             new_filename = f"{current_user.username}_ID_{timestamp}{file_ext}"
-            
-            # Kaydetme yolu
+
             upload_folder = os.path.join(app.root_path, 'static/profile_pics')
             if not os.path.exists(upload_folder):
                 os.makedirs(upload_folder)
-            
+
             file_path = os.path.join(upload_folder, new_filename)
             file.save(file_path)
-            
-            # Veritabanını güncelle
+
+            old_filename = current_user.image_file
             current_user.image_file = new_filename
             db.session.commit()
-            
-            flash('Kimlik fotoğrafı işlendi ve biometrik çipe kilitlendi.', 'success')
+
+            if old_filename and old_filename != 'default_citizen.jpg':
+                old_path = os.path.join(upload_folder, old_filename)
+                if os.path.exists(old_path):
+                    try:
+                        os.remove(old_path)
+                    except OSError as exc:
+                        print(f"Önceki profil fotoğrafı silinemedi: {exc}")
+
+            flash('Kimlik fotoğrafı güncellendi.', 'success')
         except Exception as e:
             print(f"Hata: {e}")
             flash('Yükleme sırasında teknik bir hata oluştu.', 'error')
@@ -686,6 +788,11 @@ def delete_report(report_id):
 def forum():
     # Şimdilik sadece boş bir şablon döndürüyoruz
     return render_template('forum.html')
+
+
+@app.route('/mars-social')
+def mars_social():
+    return render_template('mars.html')
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
