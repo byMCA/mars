@@ -1,0 +1,414 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-black font-mono text-gray-300 relative overflow-hidden flex flex-col">
+    
+    <div class="absolute inset-0 bg-[linear-gradient(rgba(0,255,0,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,0,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none"></div>
+
+    <div class="border-b border-green-900/50 bg-black/80 backdrop-blur p-4 flex justify-between items-center sticky top-0 z-40">
+        <div class="flex items-center gap-4">
+            <div class="w-3 h-3 bg-red-600 animate-pulse rounded-full"></div>
+            <h1 class="text-xs tracking-[0.3em] text-green-500 font-bold uppercase">MCS_TERMINAL_V9 // APPLICATION PROTOCOL</h1>
+        </div>
+        <div class="text-[10px] text-gray-500">
+            SESSION_ID: <span class="text-white" id="sessionId">Initializing...</span>
+        </div>
+    </div>
+
+    <div class="flex-grow flex flex-col lg:flex-row max-w-[1920px] mx-auto w-full h-[calc(100vh-60px)]">
+        
+        <div class="lg:w-1/4 border-r border-green-900/30 p-6 hidden lg:flex flex-col gap-6 bg-[#050505]">
+            
+            <div class="border border-green-900/50 p-1 relative group">
+                <div class="absolute top-0 left-0 w-2 h-2 border-l-2 border-t-2 border-green-500"></div>
+                <div class="absolute top-0 right-0 w-2 h-2 border-r-2 border-t-2 border-green-500"></div>
+                <div class="absolute bottom-0 left-0 w-2 h-2 border-l-2 border-b-2 border-green-500"></div>
+                <div class="absolute bottom-0 right-0 w-2 h-2 border-r-2 border-b-2 border-green-500"></div>
+                
+                <div class="h-48 bg-black relative overflow-hidden flex items-center justify-center">
+                    <video id="video" autoplay playsinline class="absolute inset-0 w-full h-full object-cover transform scale-x-[-1] opacity-60 grayscale"></video>
+                    <canvas id="canvas" class="hidden"></canvas>
+                    <div class="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,255,0,0.1)_50%)] bg-[size:100%_4px] pointer-events-none"></div>
+                    <div id="faceFrame" class="w-24 h-32 border border-green-500/30 rounded-full border-dashed animate-pulse"></div>
+                    <p class="absolute bottom-2 text-[9px] text-green-500 bg-black/80 px-2">LIVE STREAM - ANALYSIS ACTIVE</p>
+                </div>
+            </div>
+
+            <div class="flex-grow border border-green-900/30 bg-black/50 p-4 font-mono text-[10px] text-green-800 overflow-hidden relative">
+                <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black pointer-events-none"></div>
+                <div id="systemLog" class="space-y-1 h-full overflow-y-auto custom-scrollbar flex flex-col-reverse">
+                    <p>> WAITING FOR USER INPUT...</p>
+                    <p>> BIOSENSORS: ACTIVE</p>
+                    <p>> CONNECTION ESTABLISHED (MARS-EARTH LINK)</p>
+                    <p>> TERMINAL READY.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:w-3/4 p-8 lg:p-12 overflow-y-auto custom-scrollbar relative">
+            
+            <form action="{{ url_for('apply') }}" method="POST" id="mainForm" class="max-w-4xl mx-auto space-y-12 pb-20">
+                <input type="hidden" name="image_data" id="imageData">
+
+                <div class="form-section opacity-100 transition-all duration-500" id="step1">
+                    <h2 class="text-xl text-white font-bold border-b border-green-900/50 pb-2 mb-6 flex items-center gap-3">
+                        <span class="bg-green-900/20 text-green-500 text-xs px-2 py-1">STEP 01</span>
+                        IDENTITY AND PHYSICAL CONDITION
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                        
+                        <div class="group relative">
+                            <label class="text-[10px] uppercase text-gray-500 tracking-widest mb-2 block group-focus-within:text-green-500 transition-colors">Code Name (Username)</label>
+                            
+                            <input type="text" name="username" id="usernameInput" required 
+                                   class="w-full bg-transparent border-b border-gray-700 py-2 text-white focus:border-green-500 focus:outline-none transition-colors font-mono text-sm uppercase"
+                                   placeholder="MARS_ID_XXXX" autocomplete="off">
+                                   
+                            <div id="usernameFeedback" class="text-[9px] font-mono mt-1 h-4 transition-all duration-300"></div>
+                            
+                            <div id="loadingIcon" class="absolute right-0 top-9 hidden">
+                                <div class="w-3 h-3 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+                            </div>
+                        </div>
+
+                        <div class="group">
+                            <label class="text-[10px] uppercase text-gray-500 tracking-widest mb-2 block group-focus-within:text-green-500 transition-colors">Contact Frequency (E-Mail)</label>
+                            <input type="email" name="email" required 
+                                   class="w-full bg-transparent border-b border-gray-700 py-2 text-white focus:border-green-500 focus:outline-none transition-colors font-mono text-sm"
+                                   placeholder="ornek@dunya.gov">
+                        </div>
+
+                        <div class="group">
+                            <label class="text-[10px] uppercase text-gray-500 tracking-widest mb-2 block group-focus-within:text-green-500 transition-colors">Real Name (Confidential)</label>
+                            <input type="text" name="full_name" required 
+                                   class="w-full bg-transparent border-b border-gray-700 py-2 text-white focus:border-green-500 focus:outline-none transition-colors font-mono text-sm"
+                                   placeholder="Ad Soyad">
+                        </div>
+
+                        <div class="group">
+                            <label class="text-[10px] uppercase text-gray-500 tracking-widest mb-2 block group-focus-within:text-green-500 transition-colors">Access Password</label>
+                            <input type="password" name="password" required 
+                                   class="w-full bg-transparent border-b border-gray-700 py-2 text-white focus:border-green-500 focus:outline-none transition-colors font-mono text-sm"
+                                   placeholder="••••••••">
+                        </div>
+                    </div>
+
+                    <div class="border-t border-green-900/30 pt-6 mb-6">
+                        <h3 class="text-xs text-green-700 font-bold mb-4 flex items-center gap-2">
+                            <span class="w-1 h-1 bg-green-500 rounded-full"></span>
+                            BIOMETRIC DATA ENTRY
+                        </h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                            <div class="group">
+                                <label class="text-[10px] uppercase text-gray-500 tracking-widest mb-2 block group-focus-within:text-green-500">Height (CM)</label>
+                                <input type="number" name="height" required min="100" max="250"
+                                       class="w-full bg-black border border-gray-700 p-2 text-white focus:border-green-500 focus:outline-none font-mono text-sm text-center"
+                                       placeholder="175">
+                            </div>
+
+                            <div class="group">
+                                <label class="text-[10px] uppercase text-gray-500 tracking-widest mb-2 block group-focus-within:text-green-500">Weight (KG)</label>
+                                <input type="number" name="weight" required min="40" max="200"
+                                       class="w-full bg-black border border-gray-700 p-2 text-white focus:border-green-500 focus:outline-none font-mono text-sm text-center"
+                                       placeholder="70">
+                            </div>
+
+                            <div class="group">
+                                <label class="text-[10px] uppercase text-gray-500 tracking-widest mb-2 block group-focus-within:text-green-500">Blood Type</label>
+                                <select name="blood_type" class="w-full bg-black border border-gray-700 p-2 text-white focus:border-green-500 focus:outline-none font-mono text-sm appearance-none cursor-pointer text-center">
+                                    <option value="" disabled selected>SELECT</option>
+                                    <option value="A+">A Rh+</option>
+                                    <option value="A-">A Rh-</option>
+                                    <option value="B+">B Rh+</option>
+                                    <option value="B-">B Rh-</option>
+                                    <option value="AB+">AB Rh+</option>
+                                    <option value="AB-">AB Rh-</option>
+                                    <option value="0+">0 Rh+</option>
+                                    <option value="0-">0 Rh-</option>
+                                </select>
+                            </div>
+
+                            <div class="group">
+                                <label class="text-[10px] uppercase text-gray-500 tracking-widest mb-2 block group-focus-within:text-green-500">Origin</label>
+                                <select name="origin" class="w-full bg-black border border-gray-700 p-2 text-white focus:border-green-500 focus:outline-none font-mono text-sm appearance-none cursor-pointer">
+                                    <option value="" disabled selected>REGION</option>
+                                    <option value="NA">North America</option>
+                                    <option value="EU">European Union</option>
+                                    <option value="AS">Asia Pacific</option>
+                                    <option value="AF">African Union</option>
+                                    <option value="SA">South America</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="form-section opacity-50 pointer-events-none transition-all duration-500 filter blur-[2px]" id="step2">
+                    <h2 class="text-xl text-white font-bold border-b border-green-900/50 pb-2 mb-6 flex items-center gap-3">
+                        <span class="bg-gray-800 text-gray-500 text-xs px-2 py-1" id="step2Badge">STEP 02</span>
+                        TECHNICAL COMPETENCE ANALYSIS
+                    </h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="group">
+                            <label class="text-[10px] uppercase text-gray-500 tracking-widest mb-2 block">Main Expertise Field</label>
+                            <input type="text" name="specialty" required 
+                                   class="w-full bg-transparent border-b border-gray-700 py-2 text-white focus:border-green-500 focus:outline-none font-mono text-sm"
+                                   placeholder="E.g.: Nuclear Engineering, Astrobiology">
+                        </div>
+                        <div class="group">
+                            <label class="text-[10px] uppercase text-gray-500 tracking-widest mb-2 block">Academic Degree</label>
+                            <input type="text" name="education" required 
+                                   class="w-full bg-transparent border-b border-gray-700 py-2 text-white focus:border-green-500 focus:outline-none font-mono text-sm"
+                                   placeholder="E.g.: PhD, MSc">
+                        </div>
+                    </div>
+
+                    <div class="mt-8 border border-gray-800 p-4 bg-gray-900/20">
+                        <h3 class="text-xs text-green-600 mb-4 font-bold">PSYCHOLOGICAL RESILIENCE TEST (Self-Assessment)</h3>
+                        <div class="space-y-3">
+                            <label class="flex items-center gap-3 cursor-pointer group">
+                                <div class="w-4 h-4 border border-gray-600 flex items-center justify-center group-hover:border-green-500">
+                                    <input type="checkbox" class="appearance-none w-2 h-2 bg-green-500 opacity-0 checked:opacity-100" required>
+                                </div>
+                                <span class="text-[10px] text-gray-400 group-hover:text-gray-300">I can endure long-term isolation (3+ years).</span>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer group">
+                                <div class="w-4 h-4 border border-gray-600 flex items-center justify-center group-hover:border-green-500">
+                                    <input type="checkbox" class="appearance-none w-2 h-2 bg-green-500 opacity-0 checked:opacity-100" required>
+                                </div>
+                                <span class="text-[10px] text-gray-400 group-hover:text-gray-300">I can make vital decisions under high pressure.</span>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer group">
+                                <div class="w-4 h-4 border border-gray-600 flex items-center justify-center group-hover:border-green-500">
+                                    <input type="checkbox" class="appearance-none w-2 h-2 bg-green-500 opacity-0 checked:opacity-100" required>
+                                </div>
+                                <span class="text-[10px] text-gray-400 group-hover:text-gray-300">I will obey the colony laws (Code of Mars) unconditionally.</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section opacity-50 pointer-events-none transition-all duration-500 filter blur-[2px]" id="step3">
+                    <h2 class="text-xl text-white font-bold border-b border-green-900/50 pb-2 mb-6 flex items-center gap-3">
+                        <span class="bg-gray-800 text-gray-500 text-xs px-2 py-1" id="step3Badge">STEP 03</span>
+                        LETTER OF INTENT AND APPROVAL
+                    </h2>
+
+                    <div>
+                        <label class="text-[10px] uppercase text-gray-500 tracking-widest mb-2 block">Colony Manifesto (Detailed Explanation)</label>
+                        <textarea name="manifesto" rows="6" required
+                                  class="w-full bg-black/30 border border-gray-700 p-4 text-white focus:border-green-500 focus:outline-none font-mono text-sm leading-relaxed"
+                                  placeholder="Why should humanity send you to Mars? What will your skills contribute to the colony? (Min. 50 words)"></textarea>
+                    </div>
+
+                    <div class="mt-8">
+                        <button type="button" id="scanButton" onclick="performScan()" 
+                                class="group relative w-full py-6 border border-green-500/50 bg-green-900/10 hover:bg-green-500/20 transition-all overflow-hidden">
+                            <div class="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(0,255,0,0.05)_10px,rgba(0,255,0,0.05)_20px)]"></div>
+                            <div class="relative flex flex-col items-center gap-2">
+                                <span class="text-green-500 font-bold tracking-[0.3em] uppercase text-sm group-hover:text-white transition-colors" id="scanBtnText">START BIOMETRIC FACE SCAN</span>
+                                <span class="text-[9px] text-gray-500 font-mono" id="scanBtnSub">CAMERA ACCESS REQUIRED</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="finalSubmit" class="hidden opacity-0 transition-opacity duration-1000 mt-8">
+                    <div class="flex items-center gap-4 border border-green-500 p-4 bg-green-900/20 mb-6">
+                        <div class="w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
+                        <div class="text-xs text-green-400 font-mono">
+                            SYSTEM APPROVAL: ALL DATA VALID.<br>
+                            BIOMETRIC MATCH: %99.8
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-white text-black font-bold py-4 hover:bg-gray-200 transition-colors uppercase tracking-widest text-sm">
+                        CONFIRM AND SUBMIT APPLICATION
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- DEĞİŞKENLER ---
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const imageDataInput = document.getElementById('imageData');
+    const logBox = document.getElementById('systemLog');
+    const sessionId = document.getElementById('sessionId');
+    const usernameInput = document.getElementById('usernameInput');
+    const feedbackDiv = document.getElementById('usernameFeedback');
+    const loadingIcon = document.getElementById('loadingIcon');
+    
+    // Rastgele Session ID
+    sessionId.innerText = 'MRS-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+
+    // --- KAMERA BAŞLATMA ---
+    async function initCamera() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+            addLog("CAMERA MODULE: ONLINE");
+        } catch (err) {
+            addLog("CRITICAL ERROR: CAMERA ACCESS DENIED");
+            console.error(err);
+        }
+    }
+    window.addEventListener('load', initCamera);
+
+    // --- LOG FONKSİYONU ---
+    function addLog(text) {
+        const p = document.createElement('p');
+        const time = new Date().toLocaleTimeString('en-US', {hour12: false});
+        p.innerText = `[${time}] > ${text}`;
+        logBox.prepend(p);
+    }
+
+    // --- ADIM GEÇİŞLERİ ---
+    const step1Inputs = document.querySelectorAll('#step1 input, #step1 select');
+    const step2Section = document.getElementById('step2');
+    const step2Badge = document.getElementById('step2Badge');
+    
+    // DÜZELTME: Adım 2'deki TÜM inputları (checkboxlar dahil) seçiyoruz
+    const step2Inputs = document.querySelectorAll('#step2 input'); 
+    
+    const step3Section = document.getElementById('step3');
+    const step3Badge = document.getElementById('step3Badge');
+
+    // Step 1 Kontrolü
+    step1Inputs.forEach(input => {
+        input.addEventListener('input', () => {
+            const allFilled = Array.from(step1Inputs).every(inp => inp.value.trim() !== '');
+            if(allFilled && step2Section.classList.contains('opacity-50')) {
+                unlockSection(step2Section, step2Badge);
+                addLog("STEP 01 COMPLETE. UNLOCKING TECHNICAL MODULE...");
+            }
+        });
+    });
+
+    // Step 2 Kontrolü (DÜZELTİLDİ: Checkbox kontrolü eklendi)
+    step2Inputs.forEach(input => {
+        // Checkbox değişimi için 'change' de ekledik
+        ['input', 'change'].forEach(evt => 
+            input.addEventListener(evt, () => {
+                // Metin kutuları dolu mu?
+                const textFilled = Array.from(document.querySelectorAll('#step2 input[type="text"]')).every(inp => inp.value.trim() !== '');
+                // Checkboxlar işaretli mi?
+                const checksChecked = Array.from(document.querySelectorAll('#step2 input[type="checkbox"]')).every(inp => inp.checked);
+
+                if(textFilled && checksChecked && step3Section.classList.contains('opacity-50')) {
+                    unlockSection(step3Section, step3Badge);
+                    addLog("STEP 02 COMPLETE. UNLOCKING BIOMETRIC MODULE...");
+                }
+            })
+        );
+    });
+
+    function unlockSection(section, badge) {
+        section.classList.remove('opacity-50', 'pointer-events-none', 'filter', 'blur-[2px]');
+        section.classList.add('opacity-100');
+        badge.classList.remove('bg-gray-800', 'text-gray-500');
+        badge.classList.add('bg-green-900/20', 'text-green-500');
+    }
+
+    // --- KULLANICI ADI KONTROLÜ ---
+    let timeout = null;
+    usernameInput.addEventListener('input', function() {
+        const username = this.value.trim();
+        clearTimeout(timeout);
+        
+        if (username.length === 0) {
+            feedbackDiv.innerText = "";
+            usernameInput.classList.remove('border-red-500', 'border-green-500');
+            return;
+        }
+
+        loadingIcon.classList.remove('hidden');
+        feedbackDiv.innerText = "CHECKING DATABASE...";
+        feedbackDiv.className = "text-[9px] font-mono mt-1 text-yellow-500 animate-pulse";
+
+        timeout = setTimeout(() => {
+            checkAvailability(username);
+        }, 500);
+    });
+
+    async function checkAvailability(username) {
+        try {
+            const response = await fetch('/check_username', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: username })
+            });
+            const data = await response.json();
+            loadingIcon.classList.add('hidden');
+
+            if (data.available) {
+                feedbackDiv.innerText = ">> APPROVED: " + data.message;
+                feedbackDiv.className = "text-[9px] font-mono mt-1 text-green-500";
+                usernameInput.classList.remove('border-red-500', 'border-gray-700');
+                usernameInput.classList.add('border-green-500');
+            } else {
+                feedbackDiv.innerText = ">> ERROR: " + data.message;
+                feedbackDiv.className = "text-[9px] font-mono mt-1 text-red-500 font-bold blink";
+                usernameInput.classList.remove('border-green-500', 'border-gray-700');
+                usernameInput.classList.add('border-red-500');
+            }
+        } catch (error) { console.error(error); }
+    }
+
+    // --- YÜZ TARAMA ---
+    function performScan() {
+        const btn = document.getElementById('scanButton');
+        const btnText = document.getElementById('scanBtnText');
+        const btnSub = document.getElementById('scanBtnSub');
+        const finalDiv = document.getElementById('finalSubmit');
+
+        btn.disabled = true;
+        btnText.innerText = "SCANNING...";
+        btn.classList.add('border-red-500', 'bg-red-900/20');
+        addLog("BIOMETRIC SCAN INITIATED...");
+
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += 10;
+            btnSub.innerText = `ANALYZING: %${progress}`;
+            addLog(`ANALYZING FACE GEOMETRY... %${progress}`);
+
+            if(progress >= 100) {
+                clearInterval(interval);
+                capturePhoto();
+                
+                btnText.innerText = "SCAN COMPLETED";
+                btnText.classList.replace('text-green-500', 'text-white');
+                btnSub.innerText = "DATA ENCRYPTED AND ATTACHED";
+                btn.classList.replace('border-red-500', 'border-green-500');
+                btn.classList.replace('bg-red-900/20', 'bg-green-500/20');
+                
+                finalDiv.classList.remove('hidden');
+                setTimeout(() => finalDiv.classList.remove('opacity-0'), 100);
+                addLog("SCAN COMPLETE. FORM READY FOR SUBMISSION.");
+                
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            }
+        }, 300);
+    }
+
+    function capturePhoto() {
+        const context = canvas.getContext('2d');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        imageDataInput.value = canvas.toDataURL('image/jpeg');
+        video.pause();
+        addLog("IMAGE CAPTURED AND ENCRYPTED.");
+    }
+</script>
+
+</script>
+{% endblock %}

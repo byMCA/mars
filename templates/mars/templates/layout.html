@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mars Government | Official Portal</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        mars: {
+                            red: '#E03C31',
+                            black: '#050505',
+                            cyan: '#00F0FF',
+                            platinum: '#E5E4E2'
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 2px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #E03C31;
+        }
+        .glass-panel {
+            background: rgba(20, 20, 20, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .hexagon {
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        }
+        
+        .text-glow {
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        body {
+            background-color: #050505;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+    </style>
+</head>
+<body class="bg-mars-black text-mars-platinum min-h-screen flex flex-col relative selection:bg-mars-red selection:text-white">
+
+    <div class="fixed inset-0 pointer-events-none z-50 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAuMSIvPgo8L3N2Zz4=')] opacity-30"></div>
+
+    <nav class="border-b border-white/10 bg-[#050505]/90 backdrop-blur-md sticky top-0 z-40">
+        <div class="max-w-[1800px] mx-auto px-6 h-20 flex justify-between items-center">
+            
+           <a href="{{ url_for('index') }}" class="flex items-center gap-3 group">
+    <div class="w-10 h-10 border border-white/20 rounded-full flex items-center justify-center relative overflow-hidden group-hover:border-mars-red transition-colors duration-500">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" 
+             alt="Mars Logo" 
+             class="w-full h-full object-cover">
+    </div>
+    
+    <div>
+        <h1 class="font-bold text-sm tracking-[0.2em] text-white leading-none group-hover:text-mars-red transition-colors">MARS</h1>
+        <span class="text-[9px] text-gray-500 font-mono tracking-widest">GOV. TERMINAL</span>
+    </div>
+</a>
+
+            <div class="flex items-center gap-6">
+                
+                {% if current_user.is_authenticated %}
+                    <div class="text-right hidden md:block border-r border-white/10 pr-6">
+                        <div class="text-white font-bold text-xs uppercase tracking-widest flex items-center justify-end gap-2">
+                            {{ current_user.full_name }}
+                            {% if current_user.tier == 18 %}
+                                <span class="text-purple-500" title="Emperor">👑</span>
+                            {% endif %}
+                        </div>
+                        <div class="text-mars-cyan text-[9px] font-mono">{{ current_user.citizenship_id }}</div>
+                    </div>
+<a href="{{ url_for('notifications') }}" class="relative group mr-4">
+                        <svg class="w-5 h-5 text-gray-400 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                        
+                        {% if unread_count > 0 %}
+                        <span class="absolute -top-2 -right-2 bg-red-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-black animate-pulse">
+                            {{ unread_count }}
+                        </span>
+                        {% endif %}
+                    </a>
+                    {% if current_user.tier >= 9 %}
+                        <a href="{{ url_for('admin_panel') }}" class="text-mars-red font-bold text-xs tracking-widest hover:text-white transition-colors border border-mars-red/50 px-3 py-1 rounded bg-mars-red/10 animate-pulse hover:bg-mars-red hover:animate-none">
+                            [ ADMIN ]
+                        </a>
+                    {% endif %}
+
+                    <a href="{{ url_for('dashboard') }}" class="text-gray-400 hover:text-white text-xs font-mono tracking-widest transition-colors">
+                        [ PANEL ]
+                    </a>
+                    
+                    <a href="{{ url_for('logout') }}" class="text-red-500 hover:text-red-400 text-xs font-mono tracking-widest transition-colors border border-red-900/30 px-3 py-1 rounded hover:bg-red-900/20">
+                        LOGOUT
+                    </a>
+
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="text-sm font-bold text-white hover:text-mars-cyan transition-colors tracking-wider">LOGIN</a>
+                    <a href="{{ url_for('apply') }}" class="bg-white text-black px-5 py-2 text-xs font-bold tracking-widest hover:bg-mars-cyan transition-colors">APPLY</a>
+                {% endif %}
+
+            </div>
+        </div>
+    </nav>
+
+    <div class="fixed top-24 right-6 z-[9999] w-96 space-y-2 pointer-events-none">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="pointer-events-auto p-4 border-l-4 backdrop-blur-md shadow-lg transform transition-all duration-300 animate-slide-in
+                          {% if category == 'error' %} border-mars-red bg-red-900/80 text-white
+                          {% elif category == 'warning' %} border-yellow-500 bg-yellow-900/80 text-white
+                          {% else %} border-green-500 bg-green-900/80 text-green-100 {% endif %}">
+                <div class="flex items-center gap-3">
+                    <span class="text-lg">
+                        {% if category == 'error' %}!{% elif category == 'success' %}✓{% else %}i{% endif %}
+                    </span>
+                    <span class="text-xs font-mono tracking-wide">{{ message }}</span>
+                </div>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+    </div>
+
+    <main class="flex-grow">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="border-t border-white/10 bg-[#050505] py-8 mt-auto relative z-10">
+        <div class="max-w-[1600px] mx-auto px-6 flex flex-col md:flex-row justify-between items-center text-[10px] text-gray-600 font-mono gap-4">
+            <div>
+                © 2030 MARS COLONIZATION AUTHORITY. ALL RIGHTS RESERVED.
+            </div>
+            <div class="flex gap-6">
+                <span class="flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                    SERVER: OLYMPUS_MONS_01
+                </span>
+                <a href="#" class="hover:text-white transition-colors">PRIVACY</a>
+                <a href="#" class="hover:text-white transition-colors">CONTACT</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

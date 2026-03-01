@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="min-h-[calc(100vh-80px)] bg-black relative overflow-hidden flex items-center justify-center p-6">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,#e03c31aa,transparent_60%)]"></div>
+    <div class="absolute inset-0 bg-[linear-gradient(120deg,rgba(0,240,255,0.1),transparent,rgba(224,60,49,0.25))]"></div>
+    <div class="absolute inset-0 opacity-30" style="background-image:url('data:image/svg+xml,%3Csvg width=\'160\' height=\'160\' viewBox=\'0 0 160 160\' fill=\'none\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Crect x=\'0\' y=\'0\' width=\'1\' height=\'160\' fill=\'%23ffffff0d\'/%3E%3Crect x=\'0\' y=\'0\' width=\'160\' height=\'1\' fill=\'%23ffffff0d\'/%3E%3C/svg%3E');"></div>
+
+    <div class="relative z-10 w-full max-w-3xl mx-auto">
+        <div class="glass-panel border border-white/10 bg-white/5 rounded-2xl overflow-hidden shadow-[0_50px_140px_rgba(0,0,0,0.8)]">
+            <div class="px-8 py-6 border-b border-white/10 flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <p class="text-[11px] text-mars-cyan font-mono tracking-[0.5em] uppercase">Mars Social Access</p>
+                    <h1 class="text-3xl md:text-4xl text-white font-bold tracking-tight">Mars Sosyal Ağı</h1>
+                </div>
+                <div class="text-right">
+                    <span class="text-xs text-gray-400 font-mono">Sürüm: NOVA-1.0</span>
+                    <p class="text-[10px] text-mars-red font-mono uppercase tracking-[0.4em]">Yakında</p>
+                </div>
+            </div>
+
+            <div class="p-10 md:p-14 text-center space-y-6">
+                <div class="inline-flex flex-col items-center gap-2">
+                    <span class="text-[11px] font-mono text-gray-500 tracking-[0.6em] uppercase">Durum</span>
+                    <span class="text-6xl md:text-7xl font-black text-white tracking-[0.2em]">YAKINDA</span>
+                </div>
+                <p class="text-gray-300 text-base md:text-lg font-light max-w-2xl mx-auto leading-relaxed">
+                    Marslı topluluk için tasarlanan sosyal medya katmanı, gerçek zamanlı yayınlar, holografik paneller ve etkileşimli kubbe kanallarıyla çok yakında aktif olacak. Güncellemeler için koloninin yayın ağına bağlı kal.
+                </p>
+                <div class="flex flex-col md:flex-row items-center justify-center gap-4 pt-4">
+                    <div class="px-6 py-3 border border-white/20 rounded-full text-white text-sm tracking-[0.3em] uppercase">
+                        Beta Erişimi: Kapalı
+                    </div>
+                    <div class="px-6 py-3 border border-white/20 rounded-full text-mars-cyan text-sm tracking-[0.3em] uppercase">
+                        Notifications Armed
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-8 py-5 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 text-[11px] text-gray-500 font-mono">
+                <span>Quantum Relay Kanalı: #SOCIAL-BETA</span>
+                <a href="{{ url_for('index') }}" class="text-mars-cyan hover:text-white transition-colors">‹ Ana Panele Dön</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+
+<div class="container">
+    <h2>All Announcements</h2>
+    {% for duyuru in duyurular %}
+        <div class="announcement-card">
+            <h3>{{ duyuru.baslik }}</h3>
+            <p>{{ duyuru.icerik }}</p>
+            <small>Date: {{ duyuru.olusturulma_tarihi }}</small>
+            <hr>
+        </div>
+    {% endfor %}
+</div>
