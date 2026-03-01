@@ -6,8 +6,8 @@ from datetime import datetime
 import requests
 
 # Brevo API ayarları (ENV varsa onu kullanır, yoksa gömülü varsayılan)
-BREVO_API_KEY = os.getenv("BREVO_API_KEY", "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")
-MAIL_FROM = os.getenv("MAIL_FROM", "marsplatformsocial@marsofficial.com")
+BREVO_API_KEY = os.getenv("BREVO_API_KEY", "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")
+MAIL_FROM = os.getenv("MAIL_FROM", "marsplatformsocial@gmail.com")
 MAIL_FROM_NAME = os.getenv("MAIL_FROM_NAME", "Mars Platform 🚀")
 
 def generate_mars_id(origin_region):
